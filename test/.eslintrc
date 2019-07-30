@@ -1,0 +1,13 @@
+{
+  "extends": "../.eslintrc",
+  "env": {
+    "mocha": true
+  },
+  "globals": {
+    "TEST_UTILS": false,
+    "console": false
+  },
+  "rules": {
+    "no-console": "off"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "env": {
+    "development": {
+      "presets": [
+        "@babel/preset-env"
+      ],
+      "plugins": [
+        "add-module-exports",
+        "@babel/plugin-proposal-class-properties",
+        "istanbul"
+      ],
+      "comments": false
+    },
+    "production": {
+      "presets": [
+        "@babel/preset-env"
+      ],
+      "plugins": [
+        "add-module-exports",
+        "@babel/plugin-proposal-class-properties"
+      ],
+      "comments": false
+    }
+  }
+}
