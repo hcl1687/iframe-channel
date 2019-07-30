@@ -14,14 +14,14 @@ export default class Channel {
 
     this.subscribe('connect', this._handleConnect)
     window.addEventListener('message', this._handleMessage, false)
-    window.addEventListener('unload', () => {
+    window.addEventListener('beforeunload', () => {
       this.destory()
     })
   }
 
   _handleMessage = (event) => {
     const origin = event.origin
-    if (origin !== this._targetOrigin) {
+    if (origin !== this._targetOrigin && this._targetOrigin !== '*') {
       return
     }
 

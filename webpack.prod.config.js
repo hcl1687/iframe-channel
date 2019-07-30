@@ -14,7 +14,7 @@ module.exports = merge(baseConfig, {
     library: 'IframeChannel',
     libraryTarget: 'umd'
   },
-  plugins: [
-    new UglifyJsPlugin()
-  ]
+  optimization: {
+    minimizer: [new UglifyJsPlugin()]
+  }
 })
