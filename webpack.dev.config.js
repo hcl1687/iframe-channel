@@ -18,7 +18,7 @@ module.exports = merge(baseConfig, {
     path: dist,
     filename: 'index.js'
   },
-  devtool: 'cheap-module-eval-source-map',
+  devtool: 'inline-source-map',
   devServer: {
     host: 'localhost',
     port: 3000,
