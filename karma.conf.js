@@ -108,6 +108,7 @@ module.exports = function (config) {
     },
     webpack: {
       mode: 'development',
+      devtool: webpackConfig.devtool,
       module: webpackConfig.module,
       plugins: webpackConfig.plugins,
       resolve: {
