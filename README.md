@@ -1,7 +1,7 @@
 # iframe-channel
 A channel used to communicate between iframe and parent.
 
-![framework](https://raw.githubusercontent.com/hcl1687/promiseflow/master/img/framework.png)
+![framework](https://raw.githubusercontent.com/hcl1687/iframe-channel/master/img/framework.png)
 
 ## Install
 
@@ -12,7 +12,7 @@ npm install iframe-channel --save
 Say we have a page, which url is 'http://localhost:9876'. There is an iframe embedded within this page, which url is 'http://localhost:3000'.
 As follows:
 
-![use-case](https://raw.githubusercontent.com/hcl1687/promiseflow/master/img/use-case.png)
+![use-case](https://raw.githubusercontent.com/hcl1687/iframe-channel/master/img/use-case.png)
 
 We'll discuss how to conmmunicate between these two page over iframe-channel.
 
