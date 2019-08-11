@@ -37,30 +37,64 @@ export default class Channel {
     this._queue = []
   }
 
-  _handleConnect = (eventData, event) => {
-    const { type } = eventData
+  _handleConnect = (data, message, event) => {
     const target = event.source
     if (this._target && this._target !== target) {
       // If the Channel's target has been set, do not accept a new connect.
-      event.ports[0].postMessage({
-        type,
-        error: 'Connection is rejected.'
-      })
-      return
+      throw new Error('Connection is rejected.')
     }
-    event.ports[0].postMessage({
-      type,
-      data: 'Connection is accepted.'
-    })
+
     this._target = target
     this._isTargetReady = true
     this._handleQueue()
+    return 'Connection is accepted.'
+  }
+
+  _promisify (fun) {
+    return (...args) => {
+      return new Promise((resolve, reject) => {
+        try {
+          const ret = fun(...args)
+          if (ret && ret.then) {
+            ret.then(resolve).catch(reject)
+          } else {
+            resolve(ret)
+          }
+        } catch (e) {
+          reject(e)
+        }
+      })
+    }
   }
 
   _publish (event) {
-    const { type } = event.data
+    const { type, data } = event.data
     const funs = this._subscribers[type] || []
-    funs.forEach(fun => fun(event.data, event))
+
+    const funsPromise = funs.map(fun => {
+      const promiseFun = this._promisify(fun)
+      return promiseFun(data, event.data, event).then(data => {
+        if (data) {
+          return {
+            type,
+            data
+          }
+        }
+      }).catch(e => ({
+        type,
+        error: e.message
+      }))
+    })
+
+    Promise.all(funsPromise).then(arrData => {
+      arrData = arrData.filter(item => !!item)
+      const ret = {}
+      arrData.forEach(item => {
+        Object.assign(ret, item)
+      })
+
+      event.ports[0].postMessage(ret)
+    })
   }
 
   subscribe (type, fun) {
@@ -105,12 +139,8 @@ export default class Channel {
     }
   }
 
-  postMessage (type, data, id) {
+  postMessage (type, data) {
     return new Promise((resolve, reject) => {
-      if (!id) {
-        id = `${type}-${Date.now()}`
-      }
-
       /* eslint-disable-next-line */
       const msgChan = new MessageChannel()
       msgChan.port1.onmessage = (event) => {
@@ -124,14 +154,12 @@ export default class Channel {
 
       const message = {
         type,
-        id,
         data
       }
 
       // do not queue connect type
       if (!this._isTargetReady && type !== 'connect') {
         this._queue.push({
-          id,
           message,
           msgChan
         })
@@ -144,7 +172,7 @@ export default class Channel {
 
   connect () {
     if (!this._target) {
-      return Promise.reject(new Error('Target not exsist.'))
+      return Promise.reject(new Error('Target is not exist.'))
     }
 
     if (this._isTargetReady) {
@@ -156,9 +184,8 @@ export default class Channel {
       this._isTargetReady = true
       this._handleQueue()
     }).catch((error) => {
-      /* eslint-disable-next-line */
-      console.log(error)
       this._isTargetReady = false
+      throw error
     })
   }
 

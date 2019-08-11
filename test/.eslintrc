@@ -5,7 +5,8 @@
   },
   "globals": {
     "TEST_UTILS": false,
-    "console": false
+    "console": false,
+    "sinon": false
   },
   "rules": {
     "no-console": "off"

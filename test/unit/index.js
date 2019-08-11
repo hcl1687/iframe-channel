@@ -7,7 +7,8 @@ global.TEST_UTILS = {
   chai,
   assert: chai.assert,
   expect: chai.expect,
-  should: chai.should()
+  should: chai.should(),
+  sinon
 }
 
 const testsContext = require.context('./', true, /\.spec\.jsx?$/)
