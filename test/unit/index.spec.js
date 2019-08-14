@@ -246,16 +246,16 @@ describe('Channel', function () {
         targetOrigin: 'http://localhost:3000',
         target: 'fackTarget'
       })
-      sinon.spy(channel, '_handleConnect')
-      channel.unsubscribe('connect')
-      channel.subscribe('connect', channel._handleConnect)
+      sinon.spy(channel, '_handlePreConnect')
+      channel.unsubscribe('pre_connect')
+      channel.subscribe('pre_connect', channel._handlePreConnect)
 
       testIframe.src = 'http://localhost:3000?type=handle_connect'
       testIframe.onload = () => {
         setTimeout(() => {
-          expect(channel._handleConnect.called).to.be.equal(true)
+          expect(channel._handlePreConnect.called).to.be.equal(true)
           expect(channel._isTargetReady).to.be.equal(false)
-          channel._handleConnect.restore()
+          channel._handlePreConnect.restore()
           done()
         }, 1000)
       }
@@ -269,7 +269,7 @@ describe('Channel', function () {
         target: testIframe && testIframe.contentWindow
       })
       channel.subscribe(() => {})
-      expect(Object.keys(channel._subscribers)).to.deep.equal(['connect'])
+      expect(Object.keys(channel._subscribers)).to.deep.equal(['pre_connect', 'connect'])
       expect(channel._subscribers['connect'].length).to.be.equal(1)
     })
     it('subscribe connect after connected', function (done) {
@@ -289,7 +289,7 @@ describe('Channel', function () {
           })
         }, 1000)
       }
-      expect(Object.keys(channel._subscribers)).to.deep.equal(['connect'])
+      expect(Object.keys(channel._subscribers)).to.deep.equal(['pre_connect', 'connect'])
       expect(channel._subscribers['connect'].length).to.be.equal(1)
     })
   })

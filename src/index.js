@@ -1,3 +1,5 @@
+import uuid from 'uuid/v1'
+
 export default class Channel {
   constructor (opts = {}) {
     const { targetOrigin = '', subscribers = {}, target } = opts
@@ -11,7 +13,10 @@ export default class Channel {
     this._target = target
     this._queue = []
     this._isTargetReady = false
+    this._id = uuid()
+    this._targetId = ''
 
+    this.subscribe('pre_connect', this._handlePreConnect)
     this.subscribe('connect', this._handleConnect)
     window.addEventListener('message', this._handleMessage, false)
     window.addEventListener('beforeunload', () => {
@@ -22,6 +27,12 @@ export default class Channel {
   _handleMessage = (event) => {
     const origin = event.origin
     if (origin !== this._targetOrigin && this._targetOrigin !== '*') {
+      return
+    }
+
+    // One origin may have multiple channel instance. So we should filter message by instance id
+    const { type, meta = {} } = event.data
+    if (type !== 'pre_connect' && meta.id !== this._targetId) {
       return
     }
 
@@ -37,7 +48,7 @@ export default class Channel {
     this._queue = []
   }
 
-  _handleConnect = (data, message, event) => {
+  _handlePreConnect = (targetId, message, event) => {
     const target = event.source
     if (this._target && this._target !== target) {
       // If the Channel's target has been set, do not accept a new connect.
@@ -45,9 +56,13 @@ export default class Channel {
     }
 
     this._target = target
+    this._targetId = targetId
+    return this._id
+  }
+
+  _handleConnect = (data, message, event) => {
     this._isTargetReady = true
     this._handleQueue()
-    return 'Connection is accepted.'
   }
 
   _promisify (fun) {
@@ -154,11 +169,14 @@ export default class Channel {
 
       const message = {
         type,
-        data
+        data,
+        meta: {
+          id: this._id
+        }
       }
 
-      // do not queue connect type
-      if (!this._isTargetReady && type !== 'connect') {
+      // do not queue pre_connect type
+      if (!this._isTargetReady && type !== 'pre_connect') {
         this._queue.push({
           message,
           msgChan
@@ -179,10 +197,12 @@ export default class Channel {
       return Promise.resolve('Target has already connected.')
     }
 
-    const type = 'connect'
-    return this.postMessage(type).then((data) => {
+    // three times handshake
+    return this.postMessage('pre_connect', this._id).then((targetId) => {
+      this._targetId = targetId
       this._isTargetReady = true
       this._handleQueue()
+      return this.postMessage('connect')
     }).catch((error) => {
       this._isTargetReady = false
       throw error
