@@ -1,6 +1,6 @@
+import { promisify, traverse } from './utils'
 import get from 'lodash/get'
 import set from 'lodash/set'
-import { traverse } from './utils'
 import uuid from 'uuid/v1'
 
 const FUNCTION_PREFIX = '__FUNCTION__'
@@ -70,30 +70,13 @@ export default class Channel {
     this._handleQueue()
   }
 
-  _promisify (fun) {
-    return (...args) => {
-      return new Promise((resolve, reject) => {
-        try {
-          const ret = fun(...args)
-          if (ret && ret.then) {
-            ret.then(resolve).catch(reject)
-          } else {
-            resolve(ret)
-          }
-        } catch (e) {
-          reject(e)
-        }
-      })
-    }
-  }
-
   _publish (event) {
     const { type, data, meta } = event.data
     const parsedData = this._parseFunction(type, data, meta.functionKeys)
     const funs = this._subscribers[type] || []
 
     const funsPromise = funs.map(fun => {
-      const promiseFun = this._promisify(fun)
+      const promiseFun = promisify(fun)
       return promiseFun(parsedData, event.data, event).then(data => {
         if (data) {
           return {
