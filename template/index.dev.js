@@ -74,4 +74,87 @@ if (type === 'connect_iframe') {
     // message == { type: 'xx', data: 'hello' }
     return `${data}_hi`
   })
+} else if (type === 'post_a_function') {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.subscribe('xx', (data, message, event) => {
+    return data(1)
+  })
+} else if (type === 'post_a_functions_object') {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.subscribe('xx', (data, message, event) => {
+    const { add, multiply, initData } = data
+    return add(initData).then(res => {
+      return multiply(res)
+    })
+  })
+} else if (type === 'post_a_functions_array') {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.subscribe('xx', (data, message, event) => {
+    const [add, multiply, initData] = data
+    return add(initData).then(res => {
+      return multiply(res)
+    })
+  })
+} else if (type === 'post_a_functions_object_with_keys') {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.subscribe('xx', (data, message, event) => {
+    const { add, a = [], initData } = data
+    const multiply = a[2]
+    return add(initData).then(res => {
+      return multiply(res)
+    })
+  })
+} else if (type === 'child_post_a_function') {
+  const channel = new Channel({
+    target: window.parent,
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.connect().then(() => {
+    const a = function (num) {
+      return num + 1
+    }
+
+    channel.postMessage('xx', a, {
+      hasFunction: true
+    })
+  })
+} else if (type === 'child_post_a_functions_object') {
+  const channel = new Channel({
+    target: window.parent,
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.connect().then(() => {
+    const funObj = {
+      add: function (num) {
+        return num + 1
+      },
+      multiply: function (num) {
+        return num * 2
+      },
+      initData: 1
+    }
+
+    channel.postMessage('xx', funObj, {
+      hasFunction: true
+    })
+  })
+} else if (type === 'demo_post_function') {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+  })
+  channel.subscribe('xx', (data, message, event) => {
+    const { add, a = [], initData } = data
+    const multiply = a[2]
+    return add(initData).then(res => {
+      return multiply(res)
+    })
+  })
 }

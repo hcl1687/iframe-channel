@@ -34,10 +34,11 @@
   },
   "keywords": [
     "iframe",
+    "postMessage",
     "channel",
     "tunnel",
     "MessageChannel",
-    "postMessage",
+    "promise",
     "js"
   ],
   "author": "hcl1687",

@@ -92,4 +92,47 @@ describe('Channel demo', function () {
     testIframe.src = 'http://localhost:3000?type=demo_post_message_before_connect'
     document.body.appendChild(testIframe)
   })
+
+  it('Post function', function (done) {
+    const testIframe = document.createElement('iframe')
+    testIframe.id = 'test-iframe'
+
+    testIframe.onload = () => {
+      const channel = new Channel({
+        targetOrigin: 'http://localhost:3000', // only accept targetOrigin's message.
+        target: testIframe && testIframe.contentWindow
+      })
+      channel.connect().then(() => {
+        // data can be a function, or an object or an array which contains function.
+        const data = {
+          add: function (num) {
+            return new Promise(resolve => {
+              setTimeout(() => {
+                resolve(num + 1)
+              }, 1000)
+            })
+          },
+          a: [1, 2, function (num) {
+            return num * 2
+          }],
+          initData: 1
+        }
+
+        channel.postMessage('xx', data, {
+          hasFunction: true,
+          functionKeys: ['add', 'a[2]']
+        }).then((data) => {
+          // will receive 4 from child
+          expect(data).to.be.equal(4)
+
+          channel.destory()
+          testIframe.parentNode.removeChild(testIframe)
+          done()
+        })
+      })
+    }
+
+    testIframe.src = 'http://localhost:3000?type=demo_post_function'
+    document.body.appendChild(testIframe)
+  })
 })

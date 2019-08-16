@@ -1,5 +1,5 @@
 # iframe-channel
-A channel used to communicate between iframe and parent.
+A channel used to communicate between iframe and parent. Support post function.
 
 ![framework](https://raw.githubusercontent.com/hcl1687/iframe-channel/master/img/framework.png)
 
@@ -164,6 +164,67 @@ channel.subscribe('xx', (data, message, event) => {
 })
 ```
 
+### Post function
+
+iframe-channel support post function, including async function.
+
+Parent Page
+```javascript
+const testIframe = document.createElement('iframe')
+testIframe.id = 'test-iframe'
+
+testIframe.onload = () => {
+  const channel = new Channel({
+    targetOrigin: 'http://localhost:3000', // only accept targetOrigin's message.
+    target: testIframe && testIframe.contentWindow
+  })
+  channel.connect().then(() => {
+    // data can be a function, or an object or an array which contains function.
+    const data = {
+      add: function (num) {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve(num + 1)
+          }, 1000)
+        })
+      },
+      a: [1, 2, function (num) {
+        return num * 2
+      }],
+      initData: 1
+    }
+
+    channel.postMessage('xx', data, {
+      hasFunction: true,
+      functionKeys: ['add', 'a[2]']
+    }).then((data) => {
+      // will receive 4 from child
+      expect(data).to.be.equal(4)
+
+      channel.destory()
+      testIframe.parentNode.removeChild(testIframe)
+      done()
+    })
+  })
+}
+testIframe.src = 'http://localhost:3000?type=demo_post_function'
+document.body.appendChild(testIframe)
+```
+
+Child Iframe
+```javascript
+const channel = new Channel({
+  targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+})
+channel.subscribe('xx', (data, message, event) => {
+  const { add, a = [], initData } = data
+  const multiply = a[2]
+  return add(initData).then(res => {
+    return multiply(res)
+  })
+})
+```
+
 ## API Documentation
 
 ### Channel Class
@@ -199,8 +260,13 @@ channel.unsubscribe('xx')
 channel.unsubscribe('xx', fun1)
 ```
 
-#### postMessage(type, data) => <code>Promise</code>
+#### postMessage(type, data, opts?) => <code>Promise</code>
 Post a specific type of message with data.
+
+| opts                | Type                | Description                                 |
+| ---------------------| ------------------- | ------------------------------------------- |
+| hasFunction           | <code>bool</code> | Does the data contain a function or it is a function?
+| functionKeys           | <code>string[]</code> | A path string array. iframe-channel will use lodash/get to fetch the function in the specific path.
 
 ```javascript
 channel.postMessage('xx', 'hello').then(data => {

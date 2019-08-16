@@ -333,4 +333,137 @@ describe('Channel', function () {
       expect(channel._queue.length).to.be.equal(0)
     })
   })
+
+  describe('post function', () => {
+    it('post a function', function (done) {
+      testIframe.src = 'http://localhost:3000?type=post_a_function'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const a = function (num) {
+            return num + 1
+          }
+
+          channel.postMessage('xx', a, {
+            hasFunction: true
+          }).then((data) => {
+            expect(data).to.be.equal(2)
+            done()
+          })
+        })
+      }
+    })
+    it('post a functions object', function (done) {
+      testIframe.src = 'http://localhost:3000?type=post_a_functions_object'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const funObj = {
+            add: function (num) {
+              return num + 1
+            },
+            multiply: function (num) {
+              return num * 2
+            },
+            initData: 1
+          }
+
+          channel.postMessage('xx', funObj, {
+            hasFunction: true
+          }).then((data) => {
+            expect(data).to.be.equal(4)
+            done()
+          })
+        })
+      }
+    })
+    it('post a functions array', function (done) {
+      testIframe.src = 'http://localhost:3000?type=post_a_functions_array'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const funArr = [
+            function add (num) {
+              return num + 1
+            },
+            function multiply (num) {
+              return num * 2
+            },
+            1
+          ]
+
+          channel.postMessage('xx', funArr, {
+            hasFunction: true
+          }).then((data) => {
+            expect(data).to.be.equal(4)
+            done()
+          })
+        })
+      }
+    })
+    it('post a functions object with keys', function (done) {
+      testIframe.src = 'http://localhost:3000?type=post_a_functions_object_with_keys'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const funObj = {
+            add: function (num) {
+              return num + 1
+            },
+            a: [1, 2, function (num) {
+              return num * 2
+            }],
+            initData: 1
+          }
+
+          channel.postMessage('xx', funObj, {
+            hasFunction: true,
+            functionKeys: ['add', 'a[2]']
+          }).then((data) => {
+            expect(data).to.be.equal(4)
+            done()
+          })
+        })
+      }
+    })
+  })
+  it('child post a functions', function (done) {
+    channel = new Channel({
+      targetOrigin: 'http://localhost:3000'
+    })
+
+    channel.subscribe('xx', (data, message, event) => {
+      data(1).then(res => {
+        expect(res).to.be.equal(2)
+        done()
+      })
+    })
+    testIframe.src = 'http://localhost:3000?type=child_post_a_function'
+  })
+  it('child post a functions object', function (done) {
+    channel = new Channel({
+      targetOrigin: 'http://localhost:3000'
+    })
+
+    channel.subscribe('xx', (data, message, event) => {
+      const { add, multiply, initData } = data
+      add(initData).then(multiply).then((res) => {
+        expect(res).to.be.equal(4)
+        done()
+      })
+    })
+    testIframe.src = 'http://localhost:3000?type=child_post_a_functions_object'
+  })
 })

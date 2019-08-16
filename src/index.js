@@ -1,4 +1,9 @@
+import get from 'lodash/get'
+import set from 'lodash/set'
+import { traverse } from './utils'
 import uuid from 'uuid/v1'
+
+const FUNCTION_PREFIX = '__FUNCTION__'
 
 export default class Channel {
   constructor (opts = {}) {
@@ -83,12 +88,13 @@ export default class Channel {
   }
 
   _publish (event) {
-    const { type, data } = event.data
+    const { type, data, meta } = event.data
+    const parsedData = this._parseFunction(type, data, meta.functionKeys)
     const funs = this._subscribers[type] || []
 
     const funsPromise = funs.map(fun => {
       const promiseFun = this._promisify(fun)
-      return promiseFun(data, event.data, event).then(data => {
+      return promiseFun(parsedData, event.data, event).then(data => {
         if (data) {
           return {
             type,
@@ -110,6 +116,80 @@ export default class Channel {
 
       event.ports[0].postMessage(ret)
     })
+  }
+
+  _subscribeFunction (type, val) {
+    this.unsubscribe(type)
+    this.subscribe(type, (data) => {
+      return val(...data)
+    })
+  }
+
+  _stringifyFunction (type, data, keys = []) {
+    if (!keys || keys.length === 0) {
+      if (typeof data === 'function') {
+        const funType = `${FUNCTION_PREFIX}${type}`
+        this._subscribeFunction(funType, data)
+        return {
+          data: funType,
+          keys: ['']
+        }
+      }
+
+      // traverse data tree to collect function keys
+      traverse(data, (val, key, obj, path) => {
+        if (typeof val !== 'function') {
+          return
+        }
+
+        const funType = `${FUNCTION_PREFIX}${type}_${path}`
+        this._subscribeFunction(funType, val)
+        obj[key] = funType
+        keys.push(path)
+      })
+
+      return {
+        data,
+        keys
+      }
+    }
+
+    keys.forEach(key => {
+      const val = get(data, key)
+      const funType = `${FUNCTION_PREFIX}${type}_${key}`
+      this._subscribeFunction(funType, val)
+      set(data, key, funType)
+    })
+
+    return {
+      data,
+      keys
+    }
+  }
+
+  _parseFunction (type, data, keys = []) {
+    if (keys.length === 0) {
+      return data
+    }
+
+    // data is funciton
+    // data = __FUNCTION__${type}
+    if (keys.length === 1 && keys[0] === '') {
+      return (...args) => {
+        return this.postMessage(data, args)
+      }
+    }
+
+    keys.forEach(key => {
+      // data = ${FUNCTION_PREFIX}${type}_${key}
+      const realKey = key.replace(`${FUNCTION_PREFIX}${type}_`, '')
+      const functionType = get(data, realKey)
+      set(data, realKey, (...args) => {
+        return this.postMessage(functionType, args)
+      })
+    })
+
+    return data
   }
 
   subscribe (type, fun) {
@@ -154,7 +234,7 @@ export default class Channel {
     }
   }
 
-  postMessage (type, data) {
+  postMessage (type, data, opts = {}) {
     return new Promise((resolve, reject) => {
       /* eslint-disable-next-line */
       const msgChan = new MessageChannel()
@@ -173,6 +253,12 @@ export default class Channel {
         meta: {
           id: this._id
         }
+      }
+      const { hasFunction, functionKeys = [] } = opts
+      if (hasFunction === true) {
+        const stringifyData = this._stringifyFunction(type, data, functionKeys)
+        message.data = stringifyData.data
+        message.meta.functionKeys = stringifyData.keys
       }
 
       // do not queue pre_connect type
