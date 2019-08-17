@@ -266,7 +266,7 @@ Post a specific type of message with data.
 | opts                | Type                | Description                                 |
 | ---------------------| ------------------- | ------------------------------------------- |
 | hasFunction           | <code>bool</code> | Does the data contain a function or it is a function?
-| functionKeys           | <code>string[]</code> | A path string array. iframe-channel will use lodash/get to fetch the function in the specific path. If hasFunction is true but functionKeys is undefined, iframe-channel will traverse the data's every field to connect functions. This may have performance issues.
+| functionKeys           | <code>string[]</code> | A path string array. iframe-channel will use lodash/get to fetch the function in the specific path. If hasFunction is true but functionKeys is undefined, iframe-channel will traverse the data's each field to collect functions. This may have performance issues.
 
 ```javascript
 channel.postMessage('xx', 'hello').then(data => {
