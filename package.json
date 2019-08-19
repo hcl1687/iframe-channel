@@ -1,11 +1,11 @@
 {
   "name": "iframe-channel",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
     "start": "better-npm-run start",
-    "test": "better-npm-run test",
+    "test": "concurrently \"better-npm-run start\" \"better-npm-run test\"",
     "compile": "better-npm-run compile"
   },
   "betterScripts": {
@@ -58,6 +58,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "better-npm-run": "^0.1.1",
     "chai": "^4.2.0",
+    "concurrently": "^4.1.2",
     "eslint": "^6.1.0",
     "eslint-config-standard": "^13.0.1",
     "eslint-config-standard-react": "^8.0.0",

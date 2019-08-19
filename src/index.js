@@ -1,5 +1,6 @@
 import { promisify, traverse } from './utils'
 import get from 'lodash/get'
+import isPlainObject from 'lodash/isPlainObject'
 import set from 'lodash/set'
 import uuid from 'uuid/v1'
 
@@ -175,28 +176,49 @@ export default class Channel {
     return data
   }
 
-  subscribe (type, fun) {
-    if (!type || typeof fun !== 'function') {
-      return
-    }
-
+  _subscribe (type, arrFun) {
     if (!this._subscribers[type]) {
       this._subscribers[type] = []
     }
 
     const funs = this._subscribers[type]
-    if (!funs.includes(fun)) {
-      funs.push(fun)
+    arrFun.forEach(fun => {
+      if (!funs.includes(fun)) {
+        funs.push(fun)
+      }
+      // handle connect type
+      // if target has already connected, we invoke the fun immediately.
+      if (type === 'connect' && this._isTargetReady) {
+        const fakeEvent = {
+          source: this._target
+        }
+        fun(fakeEvent.data, fakeEvent)
+      }
+    })
+  }
+
+  subscribe (type, fun) {
+    if (typeof type !== 'string' && !isPlainObject(type)) {
+      return
     }
 
-    // handle connect type
-    // if target has already connected, we invoke the fun immediately.
-    if (type === 'connect' && this._isTargetReady) {
-      const fakeEvent = {
-        source: this._target
-      }
-      fun(fakeEvent.data, fakeEvent)
+    if (typeof type === 'string' && !fun) {
+      return
     }
+
+    if (typeof type === 'string') {
+      type = {
+        [type]: fun
+      }
+    }
+
+    Object.keys(type).forEach(key => {
+      let fun = type[key]
+      if (typeof fun === 'function') {
+        fun = [fun]
+      }
+      this._subscribe(key, fun)
+    })
   }
 
   unsubscribe (type, fun) {

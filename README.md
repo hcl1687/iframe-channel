@@ -237,7 +237,7 @@ channel.subscribe('xx', (data, message, event) => {
 | target           | <code>window</code> | The target window's object that the channel will connect to.
 | subscribers           | <code>object</code> | The subscribers object. Such as: { 'conncect': [fun1, fun2], 'xx': [fun1, fun2]}. You can also use 'subscribe' function to register a subscriber after create a Channel instance.
 
-#### subscribe(type, fun) => <code>undefined</code>
+#### subscribe(type, fun?) => <code>undefined</code>
 Register a function to subscribe a specific type of message.
 
 ```javascript
@@ -245,6 +245,14 @@ channel.subscribe('xx', (data, message, event) => {
   // data === 'hello'
   // message == { type: 'xx', data: 'hello' }
   return `${data}_hi`
+})
+
+// fun can be a function array
+channel.subscribe('xx', [fun1, fun2])
+// type can be an object.
+channel.subscribe({
+  'xx': [fun1, fun2],
+  'ff': fun3
 })
 ```
 

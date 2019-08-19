@@ -272,6 +272,34 @@ describe('Channel', function () {
       expect(Object.keys(channel._subscribers)).to.deep.equal(['pre_connect', 'connect'])
       expect(channel._subscribers['connect'].length).to.be.equal(1)
     })
+    it('string type and undefined function', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+      channel.subscribe('xx')
+      expect(Object.keys(channel._subscribers)).to.deep.equal(['pre_connect', 'connect'])
+    })
+    it('type is string, function is array', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+      channel.subscribe('xx', [() => {}, () => {}])
+      expect(channel._subscribers['xx'].length).to.be.equal(2)
+    })
+    it('type is object', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+      channel.subscribe({
+        xx: () => {},
+        ff: () => {}
+      })
+      expect(channel._subscribers['xx'].length).to.be.equal(1)
+      expect(channel._subscribers['ff'].length).to.be.equal(1)
+    })
     it('subscribe connect after connected', function (done) {
       channel = new Channel({
         targetOrigin: 'http://localhost:3000',
