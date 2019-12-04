@@ -7,6 +7,10 @@ A channel used to communicate between iframe and parent. Support post function.
 
 npm install iframe-channel --save
 
+## Demo
+
+https://github.com/hcl1687/iframe-channel/demo
+
 ## Code Examples
 
 Say we have a page, which url is 'http://localhost:9876'. There is an iframe embedded within this page, which url is 'http://localhost:3000'.
@@ -181,22 +185,22 @@ testIframe.onload = () => {
   channel.connect().then(() => {
     // data can be a function, or an object or an array which contains function.
     const data = {
-      add: function (num) {
+      add: function (a, b) {
         return new Promise(resolve => {
           setTimeout(() => {
-            resolve(num + 1)
+            resolve(a + b)
           }, 1000)
         })
       },
-      a: [1, 2, function (num) {
-        return num * 2
+      a: [2, function (a, b) {
+        return a * b
       }],
-      initData: 1
+      parentData: 1
     }
 
     channel.postMessage('xx', data, {
       hasFunction: true,
-      functionKeys: ['add', 'a[2]']
+      functionKeys: ['add', 'a[1]']
     }).then((data) => {
       // will receive 4 from child
       expect(data).to.be.equal(4)
@@ -217,10 +221,11 @@ const channel = new Channel({
   targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
 })
 channel.subscribe('xx', (data, message, event) => {
-  const { add, a = [], initData } = data
-  const multiply = a[2]
-  return add(initData).then(res => {
-    return multiply(res)
+  const childData = 1
+  const { add, a = [], parentData } = data
+  const multiply = a[1]
+  return add(parentData, childData).then(res => {
+    return multiply(res, a[0])
   })
 })
 ```

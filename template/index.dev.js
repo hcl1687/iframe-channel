@@ -151,10 +151,11 @@ if (type === 'connect_iframe') {
     targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
   })
   channel.subscribe('xx', (data, message, event) => {
-    const { add, a = [], initData } = data
-    const multiply = a[2]
-    return add(initData).then(res => {
-      return multiply(res)
+    const childData = 1
+    const { add, a = [], parentData } = data
+    const multiply = a[1]
+    return add(parentData, childData).then(res => {
+      return multiply(res, a[0])
     })
   })
 }

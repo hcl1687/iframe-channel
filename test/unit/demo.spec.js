@@ -105,22 +105,22 @@ describe('Channel demo', function () {
       channel.connect().then(() => {
         // data can be a function, or an object or an array which contains function.
         const data = {
-          add: function (num) {
+          add: function (a, b) {
             return new Promise(resolve => {
               setTimeout(() => {
-                resolve(num + 1)
+                resolve(a + b)
               }, 1000)
             })
           },
-          a: [1, 2, function (num) {
-            return num * 2
+          a: [2, function (a, b) {
+            return a * b
           }],
-          initData: 1
+          parentData: 1
         }
 
         channel.postMessage('xx', data, {
           hasFunction: true,
-          functionKeys: ['add', 'a[2]']
+          functionKeys: ['add', 'a[1]']
         }).then((data) => {
           // will receive 4 from child
           expect(data).to.be.equal(4)
