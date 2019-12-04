@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import Channel from 'iframe-channel'
+import { targetOrigin } from './constants'
 
 export default function ParentRequest () {
   const [message, setMessage] = useState('');
   useEffect(() => {
     const channel = new Channel({
-      targetOrigin: 'http://localhost:9876', // only accept targetOrigin's message
+      targetOrigin, // only accept targetOrigin's message
       target: window.parent // parent window
     })
     channel.subscribe('xx', (data, message, event) => {

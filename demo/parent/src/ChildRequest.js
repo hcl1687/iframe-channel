@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import Channel from 'iframe-channel'
+import { targetOrigin } from './constants'
 
 export default function ParentRequest () {
-  const src = 'http://localhost:3000/child-request'
+  const src = `${targetOrigin}/child-request`
   const [message, setMessage] = useState('')
   useEffect(() => {
     const channel = new Channel({
-      targetOrigin: 'http://localhost:3000'
+      targetOrigin
     })
     channel.subscribe('connect', () => {
       // have connected

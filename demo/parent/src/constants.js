@@ -1,0 +1,1 @@
+export const targetOrigin = 'http://localhost:3000'

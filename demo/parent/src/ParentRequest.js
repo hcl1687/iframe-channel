@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Channel from 'iframe-channel'
+import { targetOrigin } from './constants'
 
 export default function ParentRequest () {
-  const src = 'http://localhost:3000/parent-request'
+  const src = `${targetOrigin}/parent-request`
   const iframeEl = useRef(null)
   const channelRef = useRef(null)
   const [message, setMessage] = useState('')
@@ -18,7 +19,7 @@ export default function ParentRequest () {
   const handleLoad = () => {
     const testIframe = iframeEl.current
     channelRef.current = new Channel({
-      targetOrigin: 'http://localhost:3000', // only accept targetOrigin's message.
+      targetOrigin, // only accept targetOrigin's message.
       target: testIframe && testIframe.contentWindow
     })
     channelRef.current.connect().then(() => {
