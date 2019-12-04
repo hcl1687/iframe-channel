@@ -9,7 +9,7 @@ npm install iframe-channel --save
 
 ## Demo
 
-[README](./demo/README.md)
+[README](./demo)
 
 ## Code Examples
 
