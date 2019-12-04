@@ -9,7 +9,9 @@ npm install iframe-channel --save
 
 ## Demo
 
-[README](./demo)
+[Local Demo](./demo)
+
+[Online Demo](https://www.hcl1687.com/iframe-channel/parent)
 
 ## Code Examples
 
