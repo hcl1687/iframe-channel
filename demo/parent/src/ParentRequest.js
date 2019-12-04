@@ -3,7 +3,7 @@ import Channel from 'iframe-channel'
 import { targetOrigin } from './constants'
 
 export default function ParentRequest () {
-  const src = `${targetOrigin}/parent-request`
+  const src = `${targetOrigin}/#/parent-request`
   const iframeEl = useRef(null)
   const channelRef = useRef(null)
   const [message, setMessage] = useState('')
