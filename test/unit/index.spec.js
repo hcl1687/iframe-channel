@@ -148,7 +148,7 @@ describe('Channel', function () {
         })
         channel.connect().then(() => {
           channel.postMessage('xx', 'hello').catch((err) => {
-            expect(err).to.be.equal('error')
+            expect(err.message).to.be.equal('error')
             done()
           })
         })
@@ -493,5 +493,63 @@ describe('Channel', function () {
       })
     })
     testIframe.src = 'http://localhost:3000?type=child_post_a_functions_object'
+  })
+  it('Parent try reconnect', function (done) {
+    this.timeout(5000)
+    const testIframe = document.createElement('iframe')
+    testIframe.id = 'test-iframe'
+
+    testIframe.onload = () => {
+      const channel = new Channel({
+        targetOrigin: 'http://localhost:3000', // only accept targetOrigin's message.
+        target: testIframe && testIframe.contentWindow
+      })
+      channel.connect().then(() => {
+        // have connected
+        // now send a message, whose type is 'xx' and data is 'hello'
+        channel.postMessage('xx', 'hello').then((data) => {
+          // will receive 'hello_hi' from child
+          expect(data).to.be.equal('hello_hi')
+
+          // destory channel
+          // Each Channel instance will add 'message' and 'beforeunload' event listener to window
+          // object. So make sure destory the instance once it's unused.
+          channel.destory()
+          // destory iframe
+          testIframe.parentNode.removeChild(testIframe)
+          done()
+        })
+      })
+    }
+
+    testIframe.src = 'http://localhost:3000?type=parent_try_reconnect'
+    document.body.appendChild(testIframe)
+  })
+  it('Parent try reconnect failed', function (done) {
+    this.timeout(5000)
+    const testIframe = document.createElement('iframe')
+    testIframe.id = 'test-iframe'
+
+    testIframe.onload = () => {
+      const channel = new Channel({
+        targetOrigin: 'http://localhost:3000', // only accept targetOrigin's message.
+        target: testIframe && testIframe.contentWindow,
+        maxAttempts: 1
+      })
+      channel.connect().catch((err) => {
+        expect(err.message).to.be.equal('Exceed the max attempts, connect failed.')
+
+        // destory channel
+        // Each Channel instance will add 'message' and 'beforeunload' event listener to window
+        // object. So make sure destory the instance once it's unused.
+        channel.destory()
+        // destory iframe
+        testIframe.parentNode.removeChild(testIframe)
+        done()
+      })
+    }
+
+    testIframe.src = 'http://localhost:3000?type=parent_try_reconnect'
+    document.body.appendChild(testIframe)
   })
 })

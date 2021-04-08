@@ -158,4 +158,15 @@ if (type === 'connect_iframe') {
       return multiply(res, a[0])
     })
   })
+} else if (type === 'parent_try_reconnect') {
+  setTimeout(() => {
+    const channel = new Channel({
+      targetOrigin: 'http://localhost:9876' // only accept targetOrigin's message
+    })
+    channel.subscribe('xx', (data, message, event) => {
+      // data === 'hello'
+      // message == { type: 'xx', data: 'hello' }
+      return `${data}_hi`
+    })
+  }, 1500)
 }

@@ -8,7 +8,7 @@ const FUNCTION_PREFIX = '__FUNCTION__'
 
 export default class Channel {
   constructor (opts = {}) {
-    const { targetOrigin = '', subscribers = {}, target } = opts
+    const { targetOrigin = '', subscribers = {}, target, maxAttemptInterval = 1000, maxAttempts = 10 } = opts
 
     if (target === window) {
       throw new Error('The target can not be current window.')
@@ -21,6 +21,10 @@ export default class Channel {
     this._isTargetReady = false
     this._id = uuid()
     this._targetId = ''
+    // set the max interval between reconnect attempts. default 1000ms
+    this._maxAttemptInterval = maxAttemptInterval
+    // set an upper limit to the number of times we'll try to reconnect for. default 10 times.
+    this._maxAttempts = maxAttempts
 
     this.subscribe('pre_connect', this._handlePreConnect)
     this.subscribe('connect', this._handleConnect)
@@ -246,7 +250,7 @@ export default class Channel {
       msgChan.port1.onmessage = (event) => {
         const { data, error } = event.data
         if (error) {
-          reject(error)
+          reject(new Error(error))
         } else {
           resolve(data)
         }
@@ -279,6 +283,63 @@ export default class Channel {
     })
   }
 
+  _preConnect () {
+    let handlers = []
+    let tId
+    let attempts = 0
+    const promise = new Promise((resolve, reject) => {
+      handlers[0] = resolve
+      handlers[1] = reject
+    })
+    const _connect = () => {
+      attempts++
+      this.postMessage('pre_connect', this._id).then((targetId) => {
+        if (tId) {
+          clearTimeout(tId)
+          tId = undefined
+        }
+
+        if (handlers[0]) {
+          handlers[0](targetId)
+          handlers = []
+        }
+      }).catch(error => {
+        if (tId) {
+          clearTimeout(tId)
+          tId = undefined
+        }
+
+        if (handlers[1]) {
+          handlers[1](error)
+          handlers = []
+        }
+      })
+    }
+    const _timeHandler = (callback) => {
+      if (!this._isTargetReady && attempts >= this._maxAttempts) {
+        if (handlers[1]) {
+          handlers[1](new Error('Exceed the max attempts, connect failed.'))
+          handlers = []
+        }
+        return
+      }
+
+      tId = setTimeout(() => {
+        callback()
+
+        // if target still haven't acknowledged, and the reconnect attempts are less than the max attemps,
+        // try to reconnect.
+        _timeHandler(callback)
+      }, this._maxAttemptInterval)
+    }
+
+    // try to preconnect immediately
+    _connect()
+    _timeHandler(_connect)
+
+    return promise
+  }
+
   connect () {
     if (!this._target) {
       return Promise.reject(new Error('Target is not exist.'))
@@ -289,7 +350,7 @@ export default class Channel {
     }
 
     // three times handshake
-    return this.postMessage('pre_connect', this._id).then((targetId) => {
+    return this._preConnect().then((targetId) => {
       this._targetId = targetId
       this._isTargetReady = true
       this._handleQueue()

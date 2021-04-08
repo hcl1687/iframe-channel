@@ -243,6 +243,8 @@ channel.subscribe('xx', (data, message, event) => {
 | targetOrigin           | <code>string</code> | The channel will only accept targetOrigin's message.
 | target           | <code>window</code> | The target window's object that the channel will connect to.
 | subscribers           | <code>object</code> | The subscribers object. Such as: { 'conncect': [fun1, fun2], 'xx': [fun1, fun2]}. You can also use 'subscribe' function to register a subscriber after create a Channel instance.
+| maxAttemptInterval    | <code>number</code> | The max interval between reconnect attempts. Default 1000ms.
+| maxAttempts           | <code>number</code> | The max number of times we'll try to reconnect for. Default 10 times.
 
 #### subscribe(type, fun?) => <code>undefined</code>
 Register a function to subscribe a specific type of message.
