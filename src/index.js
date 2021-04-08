@@ -8,7 +8,7 @@ const FUNCTION_PREFIX = '__FUNCTION__'
 
 export default class Channel {
   constructor (opts = {}) {
-    const { targetOrigin = '', subscribers = {}, target, maxAttemptInterval = 1000, maxAttempts = 10 } = opts
+    const { targetOrigin = '', subscribers = {}, target, attemptInterval = 1000, maxAttempts = 10 } = opts
 
     if (target === window) {
       throw new Error('The target can not be current window.')
@@ -22,7 +22,7 @@ export default class Channel {
     this._id = uuid()
     this._targetId = ''
     // set the max interval between reconnect attempts. default 1000ms
-    this._maxAttemptInterval = maxAttemptInterval
+    this._attemptInterval = attemptInterval
     // set an upper limit to the number of times we'll try to reconnect for. default 10 times.
     this._maxAttempts = maxAttempts
 
@@ -330,7 +330,7 @@ export default class Channel {
         // if target still haven't acknowledged, and the reconnect attempts are less than the max attemps,
         // try to reconnect.
         _timeHandler(callback)
-      }, this._maxAttemptInterval)
+      }, this._attemptInterval)
     }
 
     // try to preconnect immediately
