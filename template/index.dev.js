@@ -33,6 +33,13 @@ if (type === 'connect_iframe') {
   child.subscribe('xx', (data, message, event) => {
     throw new Error('error')
   })
+} else if (type === 'post_message_return_empty_error') {
+  child = new Channel({
+    targetOrigin: 'http://localhost:9876'
+  })
+  child.subscribe('xx', (data, message, event) => {
+    throw new Error('')
+  })
 } else if (type === 'handle_message') {
   child = new Channel({
     target: window.parent,

@@ -22,6 +22,51 @@ As follows:
 
 We'll discuss how to conmmunicate between these two page over iframe-channel.
 
+### Child request connect
+
+Parent Page
+```javascript
+const testIframe = document.createElement('iframe')
+testIframe.id = 'test-iframe'
+
+const channel = new Channel({
+  targetOrigin: 'http://localhost:3000'
+})
+
+channel.subscribe('connect', () => {
+  // have connected
+  // now send a message, whose type is 'xx' and data is 'hello'
+  channel.postMessage('xx', 'hello').then((data) => {
+    // will receive 'hello_hi' from child
+    expect(data).to.be.equal('hello_hi')
+
+    // destory channel
+    // Each Channel instance will add 'message' and 'beforeunload' event listener to window
+    // object. So make sure destory the instance once it's unused.
+    channel.destory()
+    // destory iframe
+    testIframe.parentNode.removeChild(testIframe)
+    done()
+  })
+})
+
+testIframe.src = 'http://localhost:3000?type=demo_child_request_connect'
+document.body.appendChild(testIframe)
+```
+
+Child Iframe
+```javascript
+const channel = new Channel({
+  targetOrigin: 'http://localhost:9876', // only accept targetOrigin's message
+  target: window.parent // parent window
+})
+channel.subscribe('xx', (data, message, event) => {
+  // data === 'hello'
+  // message == { type: 'xx', data: 'hello' }
+  return `${data}_hi`
+})
+channel.connect()
+```
 
 ### Parent request connect
 
@@ -71,52 +116,6 @@ channel.subscribe('xx', (data, message, event) => {
   // message == { type: 'xx', data: 'hello' }
   return `${data}_hi`
 })
-```
-
-### Child request connect
-
-Parent Page
-```javascript
-const testIframe = document.createElement('iframe')
-testIframe.id = 'test-iframe'
-
-const channel = new Channel({
-  targetOrigin: 'http://localhost:3000'
-})
-
-channel.subscribe('connect', () => {
-  // have connected
-  // now send a message, whose type is 'xx' and data is 'hello'
-  channel.postMessage('xx', 'hello').then((data) => {
-    // will receive 'hello_hi' from child
-    expect(data).to.be.equal('hello_hi')
-
-    // destory channel
-    // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-    // object. So make sure destory the instance once it's unused.
-    channel.destory()
-    // destory iframe
-    testIframe.parentNode.removeChild(testIframe)
-    done()
-  })
-})
-
-testIframe.src = 'http://localhost:3000?type=demo_child_request_connect'
-document.body.appendChild(testIframe)
-```
-
-Child Iframe
-```javascript
-const channel = new Channel({
-  targetOrigin: 'http://localhost:9876', // only accept targetOrigin's message
-  target: window.parent // parent window
-})
-channel.subscribe('xx', (data, message, event) => {
-  // data === 'hello'
-  // message == { type: 'xx', data: 'hello' }
-  return `${data}_hi`
-})
-channel.connect()
 ```
 
 ### Post message before connect
@@ -275,6 +274,13 @@ channel.unsubscribe()
 channel.unsubscribe('xx')
 // remove 'xx' type's fun1 subscriber
 channel.unsubscribe('xx', fun1)
+// remove 'xx' type's fun1 and fun2 subscriber
+channel.unsubscribe('xx', [fun1, fun2])
+// remove 'xx' type's fun1 and 'xx1' type's fun3 and fun4 subscriber
+channel.unsubscribe({
+  'xx': fun1,
+  'xx1': [fun3, fun4]
+})
 ```
 
 #### postMessage(type, data, opts?) => <code>Promise</code>

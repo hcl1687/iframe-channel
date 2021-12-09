@@ -1,5 +1,6 @@
 import { promisify, traverse } from './utils'
 import get from 'lodash/get'
+import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import set from 'lodash/set'
 import uuid from 'uuid/v1'
@@ -91,7 +92,9 @@ export default class Channel {
         }
       }).catch(e => ({
         type,
-        error: e.message
+        error: {
+          message: e.message
+        }
       }))
     })
 
@@ -231,6 +234,21 @@ export default class Channel {
       return
     }
 
+    if (isPlainObject(type)) {
+      Object.keys(type).forEach(key => {
+        const fun = type[key]
+        this.unsubscribe(key, fun)
+      })
+      return
+    }
+
+    if (isArray(fun)) {
+      fun.forEach(item => {
+        this.unsubscribe(type, item)
+      })
+      return
+    }
+
     const funs = this._subscribers[type] || []
     if (fun === undefined) {
       this._subscribers[type] = []
@@ -250,7 +268,7 @@ export default class Channel {
       msgChan.port1.onmessage = (event) => {
         const { data, error } = event.data
         if (error) {
-          reject(new Error(error))
+          reject(new Error(error.message))
         } else {
           resolve(data)
         }

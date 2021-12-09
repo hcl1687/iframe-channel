@@ -154,6 +154,21 @@ describe('Channel', function () {
         })
       }
     })
+    it('post message return empty error', function (done) {
+      testIframe.src = 'http://localhost:3000?type=post_message_return_empty_error'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          channel.postMessage('xx', 'hello').catch((err) => {
+            expect(err.message).to.be.equal('')
+            done()
+          })
+        })
+      }
+    })
   })
 
   describe('test queue', () => {
@@ -188,6 +203,17 @@ describe('Channel', function () {
         channel.clearQueue()
         expect(channel._queue.length).to.be.equal(0)
       }
+    })
+    it('subscribe a function', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+
+      channel.postMessage('test', 'abc')
+      expect(channel._queue.length).to.be.equal(1)
+      channel.clearQueue()
+      expect(channel._queue.length).to.be.equal(0)
     })
   })
 
@@ -331,7 +357,27 @@ describe('Channel', function () {
       channel.unsubscribe()
       expect(Object.keys(channel._subscribers)).to.deep.equal([])
     })
-    it('subscribe a function', function () {
+    it('unsubscribe a type', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+
+      const fun1 = () => {}
+      const fun2 = () => {}
+      const fun3 = () => {}
+      const fun4 = () => {}
+      channel.subscribe('test', fun1)
+      channel.subscribe('test', fun2)
+      channel.subscribe('test1', fun3)
+      channel.subscribe('test1', fun4)
+      expect(channel._subscribers['test'].length).to.be.equal(2)
+      expect(channel._subscribers['test1'].length).to.be.equal(2)
+      channel.unsubscribe('test')
+      expect(channel._subscribers['test'].length).to.be.equal(0)
+      expect(channel._subscribers['test1'].length).to.be.equal(2)
+    })
+    it('unsubscribe a function', function () {
       channel = new Channel({
         targetOrigin: 'http://localhost:3000',
         target: testIframe && testIframe.contentWindow
@@ -346,19 +392,43 @@ describe('Channel', function () {
       expect(channel._subscribers['test'].length).to.be.equal(1)
       expect(channel._subscribers['test'][0]).to.be.equal(fun2)
     })
-  })
-
-  describe('test queue', () => {
-    it('subscribe a function', function () {
+    it('unsubscribe an array', function () {
       channel = new Channel({
         targetOrigin: 'http://localhost:3000',
         target: testIframe && testIframe.contentWindow
       })
 
-      channel.postMessage('test', 'abc')
-      expect(channel._queue.length).to.be.equal(1)
-      channel.clearQueue()
-      expect(channel._queue.length).to.be.equal(0)
+      const fun1 = () => {}
+      const fun2 = () => {}
+      channel.subscribe('test', fun1)
+      channel.subscribe('test', fun2)
+      expect(channel._subscribers['test'].length).to.be.equal(2)
+      channel.unsubscribe('test', [fun1, fun2])
+      expect(channel._subscribers['test'].length).to.be.equal(0)
+    })
+    it('unsubscribe a object', function () {
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000',
+        target: testIframe && testIframe.contentWindow
+      })
+
+      const fun1 = () => {}
+      const fun2 = () => {}
+      const fun3 = () => {}
+      const fun4 = () => {}
+      channel.subscribe('test', fun1)
+      channel.subscribe('test', fun2)
+      channel.subscribe('test1', fun3)
+      channel.subscribe('test1', fun4)
+      expect(channel._subscribers['test'].length).to.be.equal(2)
+      expect(channel._subscribers['test1'].length).to.be.equal(2)
+      channel.unsubscribe({
+        test: fun1,
+        test1: [fun3, fun4]
+      })
+      expect(channel._subscribers['test'].length).to.be.equal(1)
+      expect(channel._subscribers['test'][0]).to.be.equal(fun2)
+      expect(channel._subscribers['test1'].length).to.be.equal(0)
     })
   })
 
