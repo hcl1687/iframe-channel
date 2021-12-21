@@ -2,7 +2,7 @@ import Channel from '../src/index'
 import urlParse from 'url-parse'
 
 const { query = {} } = urlParse(location.href, true)
-const { type } = query
+const { type, count } = query
 
 let child
 
@@ -176,4 +176,16 @@ if (type === 'connect_iframe') {
       return `${data}_hi`
     })
   }, 1500)
+} else if (type === 'handle_connect_after_refresh') {
+  child = new Channel({
+    target: window.parent,
+    targetOrigin: 'http://localhost:9876'
+  })
+  child.connect()
+
+  setTimeout(() => {
+    if (!count) {
+      location.href = location.href + '&count=1'
+    }
+  }, 500)
 }

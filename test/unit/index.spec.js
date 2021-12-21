@@ -286,6 +286,29 @@ describe('Channel', function () {
         }, 1000)
       }
     })
+
+    it('reconnect after refresh iframe', function (done) {
+      this.timeout(5000)
+
+      channel = new Channel({
+        targetOrigin: 'http://localhost:3000'
+      })
+      sinon.spy(channel, '_handlePreConnect')
+      channel.unsubscribe('pre_connect')
+      channel.subscribe('pre_connect', channel._handlePreConnect)
+
+      testIframe.src = 'http://localhost:3000?type=handle_connect_after_refresh'
+      setTimeout(() => {
+        expect(channel._handlePreConnect.calledTwice).to.be.equal(true)
+        const oldSource = channel._handlePreConnect.getCall(0).args[2].source
+        expect(oldSource).to.be.equal(null)
+        const newSource = channel._handlePreConnect.getCall(1).args[2].source
+        expect(newSource.closed).to.be.equal(false)
+        expect(channel._target === newSource).to.be.equal(true)
+        channel._handlePreConnect.restore()
+        done()
+      }, 2000)
+    })
   })
 
   describe('test subscribe', () => {

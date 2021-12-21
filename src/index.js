@@ -61,7 +61,7 @@ export default class Channel {
 
   _handlePreConnect = (targetId, message, event) => {
     const target = event.source
-    if (this._target && this._target !== target) {
+    if (this._target && !this._target.closed && this._target !== target) {
       // If the Channel's target has been set, do not accept a new connect.
       throw new Error('Connection is rejected.')
     }
