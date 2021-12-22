@@ -12,7 +12,7 @@ describe('Channel', function () {
   })
   afterEach(() => {
     if (channel) {
-      channel.destory && channel.destory()
+      channel.destroy && channel.destroy()
       channel = undefined
     }
     if (testIframe) {
@@ -604,11 +604,11 @@ describe('Channel', function () {
           // will receive 'hello_hi' from child
           expect(data).to.be.equal('hello_hi')
 
-          // destory channel
+          // destroy channel
           // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-          // object. So make sure destory the instance once it's unused.
-          channel.destory()
-          // destory iframe
+          // object. So make sure destroy the instance once it's unused.
+          channel.destroy()
+          // destroy iframe
           testIframe.parentNode.removeChild(testIframe)
           done()
         })
@@ -632,11 +632,11 @@ describe('Channel', function () {
       channel.connect().catch((err) => {
         expect(err.message).to.be.equal('Exceed the max attempts, connect failed.')
 
-        // destory channel
+        // destroy channel
         // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-        // object. So make sure destory the instance once it's unused.
-        channel.destory()
-        // destory iframe
+        // object. So make sure destroy the instance once it's unused.
+        channel.destroy()
+        // destroy iframe
         testIframe.parentNode.removeChild(testIframe)
         done()
       })

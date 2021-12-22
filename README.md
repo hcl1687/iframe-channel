@@ -40,11 +40,11 @@ channel.subscribe('connect', () => {
     // will receive 'hello_hi' from child
     expect(data).to.be.equal('hello_hi')
 
-    // destory channel
+    // destroy channel
     // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-    // object. So make sure destory the instance once it's unused.
-    channel.destory()
-    // destory iframe
+    // object. So make sure destroy the instance once it's unused.
+    channel.destroy()
+    // destroy iframe
     testIframe.parentNode.removeChild(testIframe)
     done()
   })
@@ -89,11 +89,11 @@ testIframe.onload = () => {
       // will receive 'hello_hi' from child
       expect(data).to.be.equal('hello_hi')
 
-      // destory channel
+      // destroy channel
       // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-      // object. So make sure destory the instance once it's unused.
-      channel.destory()
-      // destory iframe
+      // object. So make sure destroy the instance once it's unused.
+      channel.destroy()
+      // destroy iframe
       testIframe.parentNode.removeChild(testIframe)
       done()
     })
@@ -140,11 +140,11 @@ testIframe.onload = () => {
     // will receive 'hello_hi' from child
     expect(data).to.be.equal('hello_hi')
 
-    // destory channel
+    // destroy channel
     // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-    // object. So make sure destory the instance once it's unused.
-    channel.destory()
-    // destory iframe
+    // object. So make sure destroy the instance once it's unused.
+    channel.destroy()
+    // destroy iframe
     testIframe.parentNode.removeChild(testIframe)
     done()
   })
@@ -206,7 +206,7 @@ testIframe.onload = () => {
       // will receive 4 from child
       expect(data).to.be.equal(4)
 
-      channel.destory()
+      channel.destroy()
       testIframe.parentNode.removeChild(testIframe)
       done()
     })
@@ -317,15 +317,15 @@ Clear postMesasge queue. Channel will queue postMessage requests that was sent b
 channel.clearQueue()
 ```
 
-#### destory() => <code>undefined</code>
-Destory a Channel instance. Including:
+#### destroy() => <code>undefined</code>
+destroy a Channel instance. Including:
 1. clear subscribers.
 2. clear postMessage queue.
 3. remove window's message event listener.
 4. reset inner state.
 
 ```javascript
-channel.destory()
+channel.destroy()
 ```
 
 ## License

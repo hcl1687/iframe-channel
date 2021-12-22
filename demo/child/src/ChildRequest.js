@@ -19,10 +19,10 @@ export default function ParentRequest () {
     channel.connect()
 
     return () => {
-      // destory channel
+      // destroy channel
       // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-      // object. So make sure destory the instance once it's unused.
-      channel && channel.destory()
+      // object. So make sure destroy the instance once it's unused.
+      channel && channel.destroy()
     }
   }, [])
 

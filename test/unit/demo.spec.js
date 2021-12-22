@@ -19,11 +19,11 @@ describe('Channel demo', function () {
           // will receive 'hello_hi' from child
           expect(data).to.be.equal('hello_hi')
 
-          // destory channel
+          // destroy channel
           // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-          // object. So make sure destory the instance once it's unused.
-          channel.destory()
-          // destory iframe
+          // object. So make sure destroy the instance once it's unused.
+          channel.destroy()
+          // destroy iframe
           testIframe.parentNode.removeChild(testIframe)
           done()
         })
@@ -49,11 +49,11 @@ describe('Channel demo', function () {
         // will receive 'hello_hi' from child
         expect(data).to.be.equal('hello_hi')
 
-        // destory channel
+        // destroy channel
         // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-        // object. So make sure destory the instance once it's unused.
-        channel.destory()
-        // destory iframe
+        // object. So make sure destroy the instance once it's unused.
+        channel.destroy()
+        // destroy iframe
         testIframe.parentNode.removeChild(testIframe)
         done()
       })
@@ -78,11 +78,11 @@ describe('Channel demo', function () {
         // will receive 'hello_hi' from child
         expect(data).to.be.equal('hello_hi')
 
-        // destory channel
+        // destroy channel
         // Each Channel instance will add 'message' and 'beforeunload' event listener to window
-        // object. So make sure destory the instance once it's unused.
-        channel.destory()
-        // destory iframe
+        // object. So make sure destroy the instance once it's unused.
+        channel.destroy()
+        // destroy iframe
         testIframe.parentNode.removeChild(testIframe)
         done()
       })
@@ -125,7 +125,7 @@ describe('Channel demo', function () {
           // will receive 4 from child
           expect(data).to.be.equal(4)
 
-          channel.destory()
+          channel.destroy()
           testIframe.parentNode.removeChild(testIframe)
           done()
         })
