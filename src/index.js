@@ -31,7 +31,7 @@ export default class Channel {
     this.subscribe('connect', this._handleConnect)
     window.addEventListener('message', this._handleMessage, false)
     window.addEventListener('beforeunload', () => {
-      this.destory()
+      this.destroy()
     })
   }
 
@@ -383,7 +383,7 @@ export default class Channel {
     this._queue = []
   }
 
-  destory () {
+  destroy () {
     this._subscribers = {}
     this._targetOrigin = ''
     this._target = undefined
