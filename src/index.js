@@ -383,6 +383,13 @@ export default class Channel {
     this._queue = []
   }
 
+  // this method is deprecated and will be removed in a future major release.
+  // please use destroy instead.
+  destory () {
+    console.error(`Warning: This method is deprecated and will be removed in a future major release. Please use destroy() instead.`)
+    this.destroy()
+  }
+
   destroy () {
     this._subscribers = {}
     this._targetOrigin = ''
