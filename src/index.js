@@ -386,7 +386,8 @@ export default class Channel {
   // this method is deprecated and will be removed in a future major release.
   // please use destroy instead.
   destory () {
-    console.error(`Warning: This method is deprecated and will be removed in a future major release. Please use destroy() instead.`)
+    console.error('Warning(iframe-channel): destory is deprecated and will be removed in a future' +
+      ' major release. Please use destroy instead.')
     this.destroy()
   }
 

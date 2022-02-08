@@ -455,6 +455,69 @@ describe('Channel', function () {
     })
   })
 
+  describe('test destroy', () => {
+    it('call destroy', function (done) {
+      testIframe.src = 'http://localhost:3000?type=connect_iframe'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const connect = channel._subscribers.connect
+          expect(connect.length).to.be.equal(1)
+          expect(channel._targetOrigin).to.be.equal('http://localhost:3000')
+          expect(channel._target).to.not.equal(undefined)
+          expect(channel._queue.length).to.be.equal(0)
+          expect(channel._isTargetReady).to.be.equal(true)
+
+          channel.destroy()
+
+          expect(channel._subscribers).to.deep.equal({})
+          expect(channel._targetOrigin).to.be.equal('')
+          expect(channel._target).to.be.equal(undefined)
+          expect(channel._queue.length).to.be.equal(0)
+          expect(channel._isTargetReady).to.be.equal(false)
+
+          done()
+        })
+      }
+    })
+
+    it('call destory', function (done) {
+      testIframe.src = 'http://localhost:3000?type=connect_iframe'
+      testIframe.onload = () => {
+        channel = new Channel({
+          targetOrigin: 'http://localhost:3000',
+          target: testIframe && testIframe.contentWindow
+        })
+        channel.connect().then(() => {
+          const connect = channel._subscribers.connect
+          expect(connect.length).to.be.equal(1)
+          expect(channel._targetOrigin).to.be.equal('http://localhost:3000')
+          expect(channel._target).to.not.equal(undefined)
+          expect(channel._queue.length).to.be.equal(0)
+          expect(channel._isTargetReady).to.be.equal(true)
+          sinon.spy(console, 'error')
+
+          channel.destory()
+
+          expect(channel._subscribers).to.deep.equal({})
+          expect(channel._targetOrigin).to.be.equal('')
+          expect(channel._target).to.be.equal(undefined)
+          expect(channel._queue.length).to.be.equal(0)
+          expect(channel._isTargetReady).to.be.equal(false)
+          expect(console.error.called).to.be.equal(true)
+          expect(console.error.args[0][0]).to.be.equal('Warning(iframe-channel): destory is deprecated and will be removed in a future' +
+            ' major release. Please use destroy instead.')
+
+          console.error.restore()
+          done()
+        })
+      }
+    })
+  })
+
   describe('post function', () => {
     it('post a function', function (done) {
       testIframe.src = 'http://localhost:3000?type=post_a_function'
